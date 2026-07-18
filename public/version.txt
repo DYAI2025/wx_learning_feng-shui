@@ -1,6 +1,7 @@
-WU_XING_FENG_SHUI_PUBLIC_BUILD=wuxing-feng-shui-2026-07-18-v1-reviewed
+WU_XING_FENG_SHUI_PUBLIC_BUILD=wuxing-feng-shui-2026-07-18-v2-visual-artwork
 EXPECTED_ROUTE=/learn/wu-xing/feng-shui/
 CANONICAL=https://sizhuatelier.shop/learn/wu-xing/feng-shui/
 SOURCE_REVIEW=classical-correspondences-academic-history-claims-boundary
-GLYPH_POLICY=CN_SIMPLIFIED_SHARED_CORE_ONLY
+GLYPH_POLICY=DOCUMENTED_MIXED_USER_SUPPLIED_ARTWORK
 ANALYTICS=vendor-neutral-dataLayer-custom-event
+ARTWORK=user-supplied-five-directions-south-facing-800x600-webp-q70
