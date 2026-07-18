@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import base64
+import binascii
 import re
 from pathlib import Path
 
 PAGE = Path("public/learn/wu-xing/feng-shui/index.html")
 ASSET = "/assets/learn/wu-xing-feng-shui-five-directions-south-facing.webp"
+ASSET_FILE = Path("public/assets/learn/wu-xing-feng-shui-five-directions-south-facing.webp")
 BUILD_OLD = "wuxing-feng-shui-2026-07-18-v1-reviewed"
 BUILD_NEW = "wuxing-feng-shui-2026-07-18-v2-visual-artwork"
 MARKER = "SUPPLIED_FIVE_DIRECTIONS_ARTWORK_V1"
@@ -15,7 +18,42 @@ def fail(message: str) -> None:
     raise SystemExit(f"FAIL: {message}")
 
 
+def is_webp(data: bytes) -> bool:
+    return len(data) >= 12 and data.startswith(b"RIFF") and data[8:12] == b"WEBP"
+
+
+def ensure_binary_webp() -> None:
+    if not ASSET_FILE.exists():
+        fail(f"missing supplied artwork: {ASSET_FILE}")
+
+    raw = ASSET_FILE.read_bytes()
+    if is_webp(raw):
+        print(f"PASS: supplied artwork is binary WebP ({len(raw)} bytes)")
+        return
+
+    try:
+        encoded = "".join(raw.decode("ascii").split())
+        decoded = base64.b64decode(encoded, validate=True)
+    except (UnicodeDecodeError, binascii.Error, ValueError) as exc:
+        fail(f"supplied artwork is neither binary WebP nor valid Base64: {exc}")
+
+    if not is_webp(decoded):
+        fail("decoded supplied artwork is not a WebP file")
+
+    declared_size = int.from_bytes(decoded[4:8], "little") + 8
+    if declared_size != len(decoded):
+        fail(
+            "decoded supplied artwork is truncated: "
+            f"RIFF declares {declared_size} bytes, decoded {len(decoded)} bytes"
+        )
+
+    ASSET_FILE.write_bytes(decoded)
+    print(f"PASS: decoded supplied artwork to binary WebP ({len(decoded)} bytes)")
+
+
 def main() -> int:
+    ensure_binary_webp()
+
     if not PAGE.exists():
         fail(f"missing page: {PAGE}")
 
@@ -65,7 +103,11 @@ def main() -> int:
         '  <meta property="og:image:alt" content="Traditional south-facing Wu Xing five-directions diagram.">',
         1,
     )
-    html = html.replace('<meta name="twitter:card" content="summary">', '<meta name="twitter:card" content="summary_large_image">', 1)
+    html = html.replace(
+        '<meta name="twitter:card" content="summary">',
+        '<meta name="twitter:card" content="summary_large_image">',
+        1,
+    )
     html = html.replace(BUILD_OLD, BUILD_NEW)
     html = html.replace(
         'Chinese text policy <code>CN_SIMPLIFIED</code> with shared core characters only;',
