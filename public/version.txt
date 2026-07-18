@@ -1,0 +1,6 @@
+WU_XING_FENG_SHUI_PUBLIC_BUILD=wuxing-feng-shui-2026-07-18-v1-reviewed
+EXPECTED_ROUTE=/learn/wu-xing/feng-shui/
+CANONICAL=https://sizhuatelier.shop/learn/wu-xing/feng-shui/
+SOURCE_REVIEW=classical-correspondences-academic-history-claims-boundary
+GLYPH_POLICY=CN_SIMPLIFIED_SHARED_CORE_ONLY
+ANALYTICS=vendor-neutral-dataLayer-custom-event
