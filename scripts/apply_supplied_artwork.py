@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 PAGE = Path("public/learn/wu-xing/feng-shui/index.html")
@@ -23,17 +24,20 @@ def main() -> int:
         print("PASS: supplied artwork already integrated")
         return 0
 
-    card = '<div class="compass-card" aria-label="Interactive diagram showing modern north-up and traditional south-facing arrangements">'
-    if card not in html:
-        fail("compass-card insertion point not found")
-
     artwork = f'''<div class="compass-card supplied-artwork-card" aria-label="Traditional south-facing Wu Xing five-directions artwork">
       <!-- {MARKER} -->
       <figure class="hero-artwork">
         <img src="{ASSET}" width="800" height="600" loading="eager" decoding="async" fetchpriority="high" alt="Traditional south-facing Wu Xing diagram with Fire and South at the top, Wood and East on the left, Earth in the centre, Metal and West on the right, and Water and North at the bottom.">
         <figcaption><strong>Traditional south-facing layout.</strong> Fire/South is shown above, Water/North below, Wood/East to the left, Metal/West to the right, and Earth at the centre. This is a labelled cosmographic arrangement, not a modern north-up map. The supplied artwork uses the Traditional glyph form for East; the Five Phase characters are shared forms.</figcaption>
       </figure>'''
-    html = html.replace(card, artwork, 1)
+    html, substitutions = re.subn(
+        r'<div class="compass-card" aria-label="[^"]+">',
+        artwork,
+        html,
+        count=1,
+    )
+    if substitutions != 1:
+        fail("compass-card insertion point not found")
 
     css = '''
     /* SUPPLIED_FIVE_DIRECTIONS_ARTWORK_V1 */
