@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import base64
+import binascii
 import re
 from pathlib import Path
 
 PAGE = Path("public/learn/wu-xing/feng-shui/index.html")
 ASSET = "/assets/learn/wu-xing-feng-shui-five-directions-south-facing.webp"
+ASSET_FILE = Path("public/assets/learn/wu-xing-feng-shui-five-directions-south-facing.webp")
+ASSET_SOURCE = Path("public/assets/learn/wu-xing-feng-shui-five-directions-south-facing.base64.txt")
 BUILD_OLD = "wuxing-feng-shui-2026-07-18-v1-reviewed"
 BUILD_NEW = "wuxing-feng-shui-2026-07-18-v2-visual-artwork"
 MARKER = "SUPPLIED_FIVE_DIRECTIONS_ARTWORK_V1"
@@ -15,7 +19,29 @@ def fail(message: str) -> None:
     raise SystemExit(f"FAIL: {message}")
 
 
+def materialize_artwork() -> None:
+    if not ASSET_SOURCE.exists():
+        fail(f"missing encoded artwork source: {ASSET_SOURCE}")
+
+    try:
+        encoded = "".join(ASSET_SOURCE.read_text(encoding="ascii").split())
+        image = base64.b64decode(encoded, validate=True)
+    except (UnicodeDecodeError, binascii.Error) as exc:
+        fail(f"invalid encoded artwork source: {exc}")
+
+    if len(image) < 5_000:
+        fail(f"decoded artwork unexpectedly small: {len(image)} bytes")
+    if image[:4] != b"RIFF" or image[8:12] != b"WEBP":
+        fail("decoded artwork is not a valid RIFF/WEBP file")
+
+    ASSET_FILE.parent.mkdir(parents=True, exist_ok=True)
+    ASSET_FILE.write_bytes(image)
+    print(f"PASS: materialized supplied artwork ({len(image)} bytes)")
+
+
 def main() -> int:
+    materialize_artwork()
+
     if not PAGE.exists():
         fail(f"missing page: {PAGE}")
 
