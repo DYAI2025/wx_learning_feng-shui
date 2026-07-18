@@ -3,7 +3,7 @@ FROM python:3.12-alpine AS prepare
 WORKDIR /work
 COPY public ./public
 COPY scripts ./scripts
-RUN python scripts/validate_public_content.py && python scripts/audit_contrast.py
+RUN python scripts/apply_supplied_artwork.py && python scripts/validate_public_content.py && python scripts/audit_contrast.py
 
 FROM caddy:2-alpine
 COPY Caddyfile /etc/caddy/Caddyfile
