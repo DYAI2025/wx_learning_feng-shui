@@ -91,9 +91,20 @@ def fail(message: str) -> None:
     raise SystemExit(1)
 
 
+def validate_webp(path: Path) -> int:
+    if not path.exists():
+        fail(f"supplied artwork missing: {path}")
+    image = path.read_bytes()
+    if len(image) < 5_000:
+        fail(f"supplied artwork unexpectedly small: {len(image)} bytes")
+    if image[:4] != b"RIFF" or image[8:12] != b"WEBP":
+        fail("supplied artwork is not a valid RIFF/WEBP binary file")
+    return len(image)
+
+
 def main() -> int:
     if not PAGE.exists(): fail(f"missing page: {PAGE}")
-    if not ARTWORK.exists() or ARTWORK.stat().st_size < 10_000: fail("supplied artwork missing or unexpectedly small")
+    artwork_size = validate_webp(ARTWORK)
     html = PAGE.read_text(encoding="utf-8")
 
     for text in REQUIRED:
@@ -127,7 +138,8 @@ def main() -> int:
     if not SITEMAP.exists() or CANONICAL not in SITEMAP.read_text(encoding="utf-8"): fail("sitemap gate failed")
 
     print("PASS: BZG-32 public content validated")
-    print("- supplied south-facing artwork and alt text present")
+    print(f"- supplied south-facing WebP validated ({artwork_size} bytes)")
+    print("- supplied artwork and descriptive alt text present")
     print("- sources, limits, schools, rooms and summary present")
     print("- Hanzi, Pinyin, SEO, JSON-LD, accessibility and analytics passed")
     print("- deterministic medical, scientific, wealth and destiny claims blocked")
