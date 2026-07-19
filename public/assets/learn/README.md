@@ -1,0 +1,1 @@
+The public hero artwork is stored as a binary WebP file. Do not commit Base64 text under a `.webp` extension. The Railway build validates the RIFF/WEBP signature before publication.

@@ -109,9 +109,20 @@ def fail(message: str) -> None:
     raise SystemExit(1)
 
 
+def validate_webp(path: Path) -> int:
+    if not path.exists():
+        fail(f"supplied artwork missing: {path}")
+    image = path.read_bytes()
+    if len(image) < 5_000:
+        fail(f"supplied artwork unexpectedly small: {len(image)} bytes")
+    if image[:4] != b"RIFF" or image[8:12] != b"WEBP":
+        fail("supplied artwork is not a valid RIFF/WEBP binary file")
+    return len(image)
+
+
 def main() -> int:
     if not PAGE.exists(): fail(f"missing page: {PAGE}")
-    if not ARTWORK.exists() or ARTWORK.stat().st_size < 10_000: fail("supplied artwork missing or unexpectedly small")
+    artwork_size = validate_webp(ARTWORK)
     html = PAGE.read_text(encoding="utf-8")
 
     for text in REQUIRED:
